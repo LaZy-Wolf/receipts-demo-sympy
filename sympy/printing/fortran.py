@@ -296,6 +296,12 @@ class FCodePrinter(CodePrinter):
         else:
             return CodePrinter._print_Add(self, expr)
 
+    def parenthesize(self, item, level, strict=False):
+        # Negative bases must be wrapped: -a**2 means -(a**2) in Fortran.
+        if item.could_extract_minus_sign():
+            return "(%s)" % self._print(item)
+        return super().parenthesize(item, level, strict)
+
     def _print_Function(self, expr):
         # All constant function args are evaluated as floats
         prec =  self._settings['precision']
