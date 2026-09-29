@@ -357,6 +357,14 @@ def checksol(f, symbol, sol=None, **flags):
     # TODO: improve solution testing
 
 
+def _bad_denominator(d, sol, **flags):
+    """True if `sol` makes the denominator `d` zero or infinite."""
+    if checksol(d, sol, **flags):
+        return True
+    val = d.subs(sol)
+    return bool(val.is_finite is not True)
+
+
 def solve(f, *symbols, **flags):
     r"""
     Algebraically solves equations and systems of equations.
@@ -1398,7 +1406,7 @@ def _solve(f, *symbols, **flags):
             # in any factor to zero
             dens = flags.get('_denominators', _simple_dens(f, symbols))
             result = [s for s in result if
-                not any(checksol(den, s, **flags) for den in
+                not any(_bad_denominator(den, s, **flags) for den in
                         dens)]
         # set flags for quick exit at end; solutions for each
         # factor were already checked and simplified
@@ -1736,7 +1744,7 @@ def _solve(f, *symbols, **flags):
         # if in doubt, keep it
         dens = _simple_dens(f, symbols)
         result = [r for r in result if
-                  not any(checksol(d, r, **flags)
+                  not any(_bad_denominator(d, r, **flags)
                           for d in dens)]
     if check:
         # keep only results if the check is not False
